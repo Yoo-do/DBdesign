@@ -16,10 +16,10 @@ def get_file_list() -> [{str: bool}]:
     for file_path in file_paths:
         file_name = file_path.split('.')[0]
         try:
-            read_file(os.path.join('../resource/', file_name))
+            read_file(os.path.join('../resource/', file_path))
             files.append({'file_name': file_name, 'valid': True})
-        except:
-            files.append({'file_name': file_name, 'valid': True})
+        except Exception as e:
+            files.append({'file_name': file_name, 'valid': False})
 
     return files
 
@@ -48,6 +48,8 @@ def read_file(file_path) -> [Schema]:
             schema_obj.add_table(table_obj)
         schemas.append(schema_obj)
 
+    return schemas
+
 
 def read_decryption_data(file_path) -> str:
     """
@@ -68,7 +70,6 @@ def write_encryption_data(file_path, text) -> str:
     """
     with open(file_path, 'w') as f:
         return base64.b64encode(text.encode('utf-8')).decode('utf-8')
-
 
 if __name__ == '__main__':
     print(get_file_list())
