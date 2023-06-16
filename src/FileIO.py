@@ -16,15 +16,19 @@ def get_file_list() -> [{str: bool}]:
     for file_path in file_paths:
         file_name = file_path.split('.')[0]
         try:
-            read_file(os.path.join('../resource/', file_path))
+            get_schemas_by_filepath(os.path.join('../resource/', file_path))
             files.append({'file_name': file_name, 'valid': True})
         except Exception as e:
             files.append({'file_name': file_name, 'valid': False})
 
     return files
 
+def get_db_struct_by_file_name(file_name) -> DBStruct:
+    db_struct = DBStruct(file_name)
+    db_struct.set_schemas(get_schemas_by_filepath(os.path.join('../resource/', file_name + '.db')))
+    return db_struct
 
-def read_file(file_path) -> [Schema]:
+def get_schemas_by_filepath(file_path) -> [Schema]:
     """
     解析指定数据库文件的内容，解析成Schema列表
     :return:

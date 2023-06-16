@@ -19,6 +19,17 @@ class Table:
     def column_sort(self):
         self.columns.sort(key=lambda x: x.sort_no, reverse=False)
 
+    def get_column_infos(self):
+
+        tittle_info = ['字段', '字段名', '类型', '允许空']
+        result_info = []
+
+        for column in self.columns:
+            result_info.append(
+                [column.column_name, column.chinese_name, column.column_type, column.allow_null])
+
+        return tittle_info, result_info
+
 
 class Schema:
     def __init__(self, schema_name):
@@ -37,3 +48,32 @@ class Schema:
     def table_column_sort(self):
         for table in self.tables:
             table.column_sort()
+
+    def get_table_names(self):
+        return [table.table_name for table in self.tables]
+
+    def get_table_notes(self):
+        return [table.table_note for table in self.tables]
+
+    def get_table(self, table_name):
+        return [table for table in self.tables if table.table_name == table_name][0]
+
+class DBStruct:
+    def __init__(self, db_name):
+        self.db_name = db_name
+        self.schemas: list[Schema] = []
+
+    def add_schema(self, schema: Schema):
+        self.schemas.append(schema)
+
+    def set_schemas(self, schemas: list[Schema]):
+        self.schemas = schemas
+
+    def get_schema_num(self):
+        return len(self.schemas)
+
+    def get_schema_names(self):
+        return [schema.schema_name for schema in self.schemas]
+
+    def get_schema(self, schema_name):
+        return [schema for schema in self.schemas if schema.schema_name == schema_name][0]

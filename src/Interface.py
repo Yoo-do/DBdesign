@@ -12,10 +12,12 @@ class Interface(QMainWindow):
     """
 
     def __init__(self):
+
         self.app = QApplication(sys.argv)
 
         super(Interface, self).__init__()
 
+        self.current_window = SubWindows.SubWindow(self)
         self.ui_init()
         sys.exit(self.app.exec_())
 
@@ -57,9 +59,17 @@ class Interface(QMainWindow):
         self.menu_bar.addAction(self.exit_action)
 
     def file_window_display(self):
+        self.current_window.close()
         self.current_window = SubWindows.FileDisplayWindow(self)
         self.current_window.ui_init()
         self.current_window.display()
+
+    def table_struct_window_display(self, file_name):
+        self.current_window.close()
+        self.current_window = SubWindows.DBStructDisplayWindow(self, file_name)
+        self.current_window.ui_init()
+        self.current_window.display()
+
 
 
 if __name__ == '__main__':
