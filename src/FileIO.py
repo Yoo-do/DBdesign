@@ -4,6 +4,62 @@ from DataClass import *
 import base64
 
 
+
+class FileIOUtil:
+
+    @staticmethod
+    def file_exists(file_path) -> bool:
+        """
+        判断指定路径的文件是否存在
+        :param file_path:
+        :return:
+        """
+        return os.path.exists(file_path)
+
+    @staticmethod
+    def read_file(file_path) -> json:
+        """
+        读取指定路径文件并返回文件json内容
+        :param file_path:
+        :return: file_text
+        """
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+
+    @staticmethod
+    def write_file(file_path, content: json):
+        """
+        将json内容写入文件
+        :param file_path:
+        :param content:
+        :return:
+        """
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(content, f)
+
+    @staticmethod
+    def get_db_config():
+        """
+        从固定路径获取数据库配置信息
+        :return:
+        """
+        config_path = '../config/dblink.ini'
+        if not FileIOUtil.file_exists(config_path):
+            FileIOUtil.write_file(config_path, [])
+
+        db_config: list[dict] = FileIOUtil.read_file(config_path)
+        db_config.sort(key=lambda x: int(x['sort_no']))
+
+        return db_config
+
+
+
+class DBResourceFile:
+    def __init__(self):
+        pass
+
+
+
 def get_file_list() -> [{str: bool}]:
     """
     获取resource文件夹下面的全部文件，并判断是否合法
@@ -76,4 +132,7 @@ def write_encryption_data(file_path, text) -> str:
         return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
 if __name__ == '__main__':
-    print(get_file_list())
+    db_config = FileIOUtil.get_db_config()
+    print(db_config)
+    db_config.sort(key=lambda x: int(x['sort_no']))
+    print(db_config)

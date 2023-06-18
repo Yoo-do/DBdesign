@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QBoxLayout, \
 from PyQt5.Qt import Qt, QColor
 import SubWindows
 
+
 class Interface(QMainWindow):
     """
     主窗口
@@ -17,8 +18,10 @@ class Interface(QMainWindow):
 
         super(Interface, self).__init__()
 
-        self.current_window = SubWindows.SubWindow(self)
+        self.subwindows = SubWindows.SubWindow(self)
         self.ui_init()
+
+
         sys.exit(self.app.exec_())
 
 
@@ -26,9 +29,7 @@ class Interface(QMainWindow):
         self.show()
         self.resize(1000, 800)
         self.move(400, 100)
-
         self.setWindowTitle('DBDesign')
-
 
         # 导航菜单设置
         self.menu_bar_init()
@@ -48,10 +49,11 @@ class Interface(QMainWindow):
         # 事件设置
         self.file_action = QAction('文件')
         self.menu_bar.addAction(self.file_action)
-        self.menu_bar.triggered.connect(self.file_window_display)
+        self.file_action.triggered.connect(self.file_window_display)
 
         self.link_action = QAction('连接')
         self.menu_bar.addAction(self.link_action)
+        self.link_action.triggered.connect(self.db_link_window_display)
 
         self.exit_action = QAction('退出')
         self.exit_action.setShortcut(Qt.Key_Escape)
@@ -59,18 +61,13 @@ class Interface(QMainWindow):
         self.menu_bar.addAction(self.exit_action)
 
     def file_window_display(self):
-        self.current_window.close()
-        self.current_window = SubWindows.FileDisplayWindow(self)
-        self.current_window.ui_init()
-        self.current_window.display()
+        self.subwindows.switch_to_window(target_window_type=SubWindows.SubWindowType.FILE_WINDOW)
 
     def table_struct_window_display(self, file_name):
-        self.current_window.close()
-        self.current_window = SubWindows.DBStructDisplayWindow(self, file_name)
-        self.current_window.ui_init()
-        self.current_window.display()
+        self.subwindows.switch_to_window(target_window_type=SubWindows.SubWindowType.DB_STRUCT_WINDOW)
 
-
+    def db_link_window_display(self):
+        self.subwindows.switch_to_window(target_window_type=SubWindows.SubWindowType.DB_LINK_WINDOW)
 
 if __name__ == '__main__':
     interface = Interface()
