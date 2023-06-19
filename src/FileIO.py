@@ -2,6 +2,7 @@ import json
 import os
 from src.DataClass import *
 import base64
+import xlwings
 
 
 
@@ -102,6 +103,11 @@ class FileIOUtil:
         FileIOUtil.write_encryption_data(file_path, json.dumps(db_struct.__json__()))
 
     @staticmethod
+    def export_excel(db_struct: DBStruct, file_path: str):
+        with xlwings.App(visible=False, add_book=True) as app:
+            pass
+
+    @staticmethod
     def read_decryption_data(file_path) -> str:
         """
         读取目标文件内容并解密
@@ -121,4 +127,5 @@ class FileIOUtil:
         """
         with open(file_path, 'w') as f:
             f.write(base64.b64encode(text.encode('utf-8')).decode('utf-8'))
+
 
