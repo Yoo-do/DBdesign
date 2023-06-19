@@ -1,10 +1,7 @@
 import sys
-import FileIO
-from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QBoxLayout, \
-    QTableWidget, QTableWidgetItem, QToolBar, QPushButton, QMessageBox, QMainWindow, QMenuBar, QAction,\
-    QMenu, QListWidgetItem
-from PyQt5.Qt import Qt, QColor
-import SubWindows
+from src import SubWindows
+from PyQt5.QtWidgets import QApplication,QMainWindow, QMenuBar, QAction
+from PyQt5.Qt import Qt
 
 
 class Interface(QMainWindow):

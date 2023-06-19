@@ -6,6 +6,13 @@ class Column:
         self.column_type = column_type
         self.allow_null = allow_null
 
+    def __json__(self):
+        return {"column_name": self.column_name,
+                'sort_no': str(self.sort_no),
+                'chinese_name': self.chinese_name,
+                'column_type': self.column_type,
+                'allow_null': self.allow_null
+                }
 
 class Table:
     def __init__(self, table_name, table_note):
@@ -29,6 +36,12 @@ class Table:
                 [column.column_name, column.chinese_name, column.column_type, column.allow_null])
 
         return tittle_info, result_info
+
+    def __json__(self):
+        return {'table_name': self.table_name,
+                'table_note': self.table_note,
+                'columns': [column.__json__() for column in self.columns]
+                }
 
 
 class Schema:
@@ -58,6 +71,10 @@ class Schema:
     def get_table(self, table_name):
         return [table for table in self.tables if table.table_name == table_name][0]
 
+
+    def __json__(self):
+        return {self.schema_name: {'tables': [table.__json__() for table in self.tables]}}
+
 class DBStruct:
     def __init__(self, db_name):
         self.db_name = db_name
@@ -77,3 +94,11 @@ class DBStruct:
 
     def get_schema(self, schema_name):
         return [schema for schema in self.schemas if schema.schema_name == schema_name][0]
+
+    def __json__(self):
+        db_struct_json = {}
+        for schema in self.schemas:
+            db_struct_json.update(schema.__json__())
+        return db_struct_json
+
+

@@ -1,12 +1,8 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QBoxLayout, \
-    QTableWidget, QTableWidgetItem, QToolBar, QPushButton, QMessageBox, QMainWindow, QMenuBar, QAction, \
-    QMenu, QListWidgetItem, QLabel, QLineEdit, QStackedWidget, QButtonGroup
-from PyQt5.Qt import Qt, QColor
-from PyQt5 import QtCore
-import DataClass
-import FileIO
+from PyQt5.QtWidgets import  QWidget, QListWidget, QBoxLayout, \
+    QTableWidget, QTableWidgetItem,  QPushButton, QMessageBox, QMainWindow, QListWidgetItem, QLabel, QLineEdit, QStackedWidget
+from PyQt5.Qt import Qt
+from src import DataClass, FileIO, DBLink
 from enum import Enum
-import DBLink
 
 
 class SubWindowBase(QWidget):
@@ -95,20 +91,14 @@ class FileDisplayWindow(SubWindowBase):
 
         self.file_list_widget = QListWidget()
 
-        self.file_list_widget.itemDoubleClicked.connect(lambda: self.main_window.subwindows.switch_to_window(SubWindowType.DB_STRUCT_WINDOW, FileIO.get_db_struct_by_file_name(self.file_list_widget.currentItem().text())))
+        self.file_list_widget.itemDoubleClicked.connect(lambda: self.main_window.subwindows.switch_to_window(SubWindowType.DB_STRUCT_WINDOW, FileIO.FileIOUtil.get_db_struct(self.file_list_widget.currentItem().text())))
 
         display_layout.addWidget(self.file_list_widget)
 
     def fresh_data(self):
-        files: list = FileIO.get_file_list()
-        self.file_list_widget.clear()
+        files: list = FileIO.FileIOUtil.get_file_list()
 
-        for file in files:
-            item = QListWidgetItem(file['file_name'])
-            if not file['valid']:
-                # item.setBackground(QColor(255,0,0))
-                item.setFlags(QtCore.Qt.NoItemFlags)
-            self.file_list_widget.addItem(item)
+        self.file_list_widget.addItems(files)
 
 
 class DBStructDisplayWindow(SubWindowBase):
