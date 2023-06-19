@@ -36,6 +36,7 @@ class SubWindow:
         self.stack_widget = QStackedWidget(main_window)
         main_window.setCentralWidget(self.stack_widget)
 
+
         self.file_window_init()
         self.db_link_window_init()
         self.db_struct_window_init()

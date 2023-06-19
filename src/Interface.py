@@ -26,7 +26,9 @@ class Interface(QMainWindow):
 
 
     def ui_init(self):
-        self.show()
+        # 隐藏窗口，完成子窗口加载
+        self.hide()
+
         self.resize(1000, 800)
         self.move(400, 100)
         self.setWindowTitle('DBDesign')
@@ -36,6 +38,8 @@ class Interface(QMainWindow):
 
         self.file_window_display()
 
+        # 子窗口加载完成，显示主窗口
+        self.show()
 
     def menu_bar_init(self):
         """
