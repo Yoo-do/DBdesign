@@ -1,6 +1,6 @@
 import sys
 from src import SubWindows
-from PyQt5.QtWidgets import QApplication,QMainWindow, QMenuBar, QAction
+from PyQt5.QtWidgets import QApplication,QMainWindow, QMenuBar, QAction, QInputDialog, QMessageBox
 from PyQt5.Qt import Qt
 
 
@@ -16,6 +16,7 @@ class Interface(QMainWindow):
         super(Interface, self).__init__()
 
         self.subwindows = SubWindows.SubWindow(self)
+        self.current_window_type: SubWindows.SubWindowType = SubWindows.SubWindowType.FILE_WINDOW
         self.ui_init()
 
 
@@ -56,19 +57,50 @@ class Interface(QMainWindow):
         self.menu_bar.addAction(self.link_action)
         self.link_action.triggered.connect(self.db_link_window_display)
 
+        self.save_action = QAction('保存')
+        self.save_action.setEnabled(False)
+        self.save_action.triggered.connect(self.save_db_struct)
+        self.menu_bar.addAction(self.save_action)
+
+
         self.exit_action = QAction('退出')
         self.exit_action.setShortcut(Qt.Key_Escape)
         self.exit_action.triggered.connect(self.app.quit)
         self.menu_bar.addAction(self.exit_action)
 
     def file_window_display(self):
-        self.subwindows.switch_to_window(target_window_type=SubWindows.SubWindowType.FILE_WINDOW)
+        target_window_type = SubWindows.SubWindowType.FILE_WINDOW
+        self.switch_window_type(target_window_type)
+        self.subwindows.switch_to_window(target_window_type=target_window_type)
 
-    def table_struct_window_display(self, file_name):
-        self.subwindows.switch_to_window(target_window_type=SubWindows.SubWindowType.DB_STRUCT_WINDOW)
+    def table_struct_window_display(self, data: SubWindows.DataClass.DBStruct):
+        target_window_type = SubWindows.SubWindowType.DB_STRUCT_WINDOW
+        self.switch_window_type(target_window_type)
+        self.subwindows.switch_to_window(target_window_type=target_window_type, data=data)
 
     def db_link_window_display(self):
-        self.subwindows.switch_to_window(target_window_type=SubWindows.SubWindowType.DB_LINK_WINDOW)
+        target_window_type = SubWindows.SubWindowType.DB_LINK_WINDOW
+        self.switch_window_type(target_window_type)
+        self.subwindows.switch_to_window(target_window_type=target_window_type)
+
+    def save_db_struct(self):
+        file_name, ok = QInputDialog.getText(self, '保存', '文件名.db')
+        if ok :
+            if file_name in SubWindows.FileIO.FileIOUtil.get_file_list():
+                confirm = QMessageBox.information(self, '提示', '该文件已存在，需要覆盖吗？', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if confirm == QMessageBox.Yes:
+                    SubWindows.FileIO.FileIOUtil.write_db_struct(self.subwindows.stack_widget.currentWidget().data, file_name)
+            else:
+                SubWindows.FileIO.FileIOUtil.write_db_struct(self.subwindows.stack_widget.currentWidget().data, file_name)
+
+
+    def switch_window_type(self, window_type: SubWindows.SubWindowType):
+        self.current_window_type = window_type
+
+        if self.current_window_type == SubWindows.SubWindowType.DB_STRUCT_WINDOW:
+            self.save_action.setEnabled(True)
+        else:
+            self.save_action.setEnabled(False)
 
 if __name__ == '__main__':
     interface = Interface()

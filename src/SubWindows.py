@@ -91,13 +91,14 @@ class FileDisplayWindow(SubWindowBase):
 
         self.file_list_widget = QListWidget()
 
-        self.file_list_widget.itemDoubleClicked.connect(lambda: self.main_window.subwindows.switch_to_window(SubWindowType.DB_STRUCT_WINDOW, FileIO.FileIOUtil.get_db_struct(self.file_list_widget.currentItem().text())))
+        self.file_list_widget.itemDoubleClicked.connect(lambda: self.main_window.table_struct_window_display(FileIO.FileIOUtil.get_db_struct(self.file_list_widget.currentItem().text())))
 
         display_layout.addWidget(self.file_list_widget)
 
     def fresh_data(self):
         files: list = FileIO.FileIOUtil.get_file_list()
 
+        self.file_list_widget.clear()
         self.file_list_widget.addItems(files)
 
 
@@ -300,7 +301,7 @@ class DBlinkDisplayWindow(SubWindowBase):
             db_struct = db_link.get_db_struct(database)
             db_link.close()
 
-            self.main_window.subwindows.switch_to_window(SubWindowType.DB_STRUCT_WINDOW, db_struct)
+            self.main_window.table_struct_window_display(db_struct)
         else:
             QMessageBox.critical(self.db_config_info_widget, '测试消息', text_info, QMessageBox.Ok)
 
