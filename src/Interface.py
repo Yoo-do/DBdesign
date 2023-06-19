@@ -1,7 +1,7 @@
 import sys
 from src import SubWindows
-from PyQt5.QtWidgets import QApplication,QMainWindow, QMenuBar, QAction, QInputDialog, QMessageBox
-from PyQt5.Qt import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenuBar, QAction, QInputDialog, QMessageBox, QFileDialog
+from PyQt5.Qt import Qt, QThread, pyqtSignal
 
 
 class Interface(QMainWindow):
@@ -62,6 +62,11 @@ class Interface(QMainWindow):
         self.save_action.triggered.connect(self.save_db_struct)
         self.menu_bar.addAction(self.save_action)
 
+        self.export_action = QAction('导出')
+        self.export_action.setEnabled(False)
+        self.export_action.triggered.connect(self.export_excel)
+        self.menu_bar.addAction(self.export_action)
+
 
         self.exit_action = QAction('退出')
         self.exit_action.setShortcut(Qt.Key_Escape)
@@ -85,7 +90,7 @@ class Interface(QMainWindow):
 
     def save_db_struct(self):
         file_name, ok = QInputDialog.getText(self, '保存', '文件名.db')
-        if ok :
+        if ok:
             if file_name in SubWindows.FileIO.FileIOUtil.get_file_list():
                 confirm = QMessageBox.information(self, '提示', '该文件已存在，需要覆盖吗？', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
                 if confirm == QMessageBox.Yes:
@@ -93,14 +98,60 @@ class Interface(QMainWindow):
             else:
                 SubWindows.FileIO.FileIOUtil.write_db_struct(self.subwindows.stack_widget.currentWidget().data, file_name)
 
+    def export_excel(self):
+        file_info = QFileDialog.getSaveFileName(self, '保存', '../', 'xlsx(*.xlsx)')
+        file_path = file_info[0]
+        file_suffix = file_info[1]
+
+        class ExportExcel(QThread):
+            """
+            qt线程类，完成excel数据导出
+            """
+            msg_signal = pyqtSignal(str)
+            def __init__(self, data: SubWindows.DataClass.DBStruct, target_file_path):
+                super().__init__()
+                self.data = data
+                self.target_file_path = target_file_path
+
+            def run(self):
+                try:
+                    SubWindows.FileIO.FileIOUtil.export_excel(self.data, self.target_file_path)
+                    self.msg_signal.emit('文件导出成功')
+                except Exception as e:
+                    self.msg_signal.emit('文件导出失败')
+
+        def export_excel_func(target_file_path):
+            self.export_excel_process = ExportExcel(self.subwindows.stack_widget.currentWidget().data, target_file_path)
+            self.export_excel_process.start()
+            self.export_excel_process.msg_signal.connect(receive_signal)
+
+        def receive_signal(msg):
+            self.export_excel_msg_dialog = QMessageBox.information(self, 'Excel文件导出', msg, QMessageBox.Ok)
+
+
+        if file_suffix == '':
+            return
+
+        if SubWindows.FileIO.os.path.exists(file_path):
+            ok = QMessageBox.information(self, '提示', '该文件已存在，需要覆盖吗？',
+                                              QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if ok == QMessageBox.Yes:
+                export_excel_func(file_path)
+                QMessageBox.information(self, '消息通知', '文件正在导出，请不要退出程序', QMessageBox.Ok)
+        else:
+            export_excel_func(file_path)
+            QMessageBox.information(self, '消息通知', '文件正在导出，请不要退出程序', QMessageBox.Ok)
+
 
     def switch_window_type(self, window_type: SubWindows.SubWindowType):
         self.current_window_type = window_type
 
         if self.current_window_type == SubWindows.SubWindowType.DB_STRUCT_WINDOW:
             self.save_action.setEnabled(True)
+            self.export_action.setEnabled(True)
         else:
             self.save_action.setEnabled(False)
+            self.export_action.setEnabled(False)
 
 if __name__ == '__main__':
     interface = Interface()

@@ -1,10 +1,10 @@
 import json
 import os
+import time
+
 from src.DataClass import *
 import base64
 import xlwings
-
-
 
 class FileIOUtil:
 
@@ -103,9 +103,56 @@ class FileIOUtil:
         FileIOUtil.write_encryption_data(file_path, json.dumps(db_struct.__json__()))
 
     @staticmethod
-    def export_excel(db_struct: DBStruct, file_path: str):
-        with xlwings.App(visible=False, add_book=True) as app:
-            pass
+    def export_excel(data: DBStruct, file_path: str):
+        begin_time = time.time()
+
+        data.schemas.reverse()
+        print(f'目标路径为{file_path}')
+        with xlwings.App(visible=False, add_book=False) as app:
+            app.screen_updating = False
+            book = app.books.add()
+            for schema in data.schemas:
+                print(f'正在写入{schema.schema_name}...')
+                sheet = book.sheets.add(schema.schema_name)
+                current_row = 1
+                for table in schema.tables:
+                    sheet.range(f'A{current_row}').value = table.table_name
+                    table_name_cell = sheet.range(f'A{current_row}:E{current_row}')
+                    table_name_cell.api.Merge()
+                    table_name_cell.color = (255, 255, 0)
+                    table_name_cell.api.HorizontalAlignment = -4108
+                    table_name_cell.api.VerticalAlignment = -4108
+                    current_row += 1
+
+                    sheet.range(f'A{current_row}').value = table.table_note
+                    table_note_cell = sheet.range(f'A{current_row}:E{current_row}')
+                    table_note_cell.api.Merge()
+                    table_note_cell.color = (198, 224, 180)
+                    table_note_cell.api.HorizontalAlignment = -4108
+                    table_note_cell.api.VerticalAlignment = -4108
+                    current_row += 1
+
+                    sheet.range(f'A{current_row}:E{current_row}').value = (
+                        '序号', '字段名', '中文名', '字段类型', '是否允许空')
+                    current_row += 1
+
+                    table.column_sort()
+                    columns = []
+
+                    for column in table.columns:
+                        columns.append([column.sort_no, column.column_name, column.chinese_name, column.column_type,
+                                        column.allow_null])
+
+                    sheet.range(f'A{current_row}:E{current_row + len(columns) - 1}').value = (columns)
+                    current_row += len(columns)
+
+                sheet.range(f'A1:E{current_row - 1}').api.Borders.Weight = 2
+                for col in sheet.range(f'A1:E{current_row - 1}').columns:
+                    col.autofit()
+
+            book.save(file_path)
+            end_time = time.time()
+            print(f'写入完毕, 共耗时{round(end_time-begin_time, 2)}s')
 
     @staticmethod
     def read_decryption_data(file_path) -> str:

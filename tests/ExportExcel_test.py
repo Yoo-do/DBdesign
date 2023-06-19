@@ -9,6 +9,7 @@ def test1():
         app.screen_updating = False
         book = app.books.add()
         for schema in data.schemas:
+
             sheet = book.sheets.add(schema.schema_name)
             current_row = 1
             for table in schema.tables:
@@ -47,8 +48,13 @@ def test1():
 
         book.save('../resource/test1.xlsx')
 
+def test2():
+    data = FileIOUtil.get_db_struct('hdr')
+    FileIOUtil.export_excel(data, '../resource/hdr.xlsx')
+
+
 if __name__ == '__main__':
     begin_time = time.time()
-    test1()
+    test2()
     end_time = time.time()
     print(end_time - begin_time)
