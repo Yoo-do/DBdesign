@@ -38,21 +38,6 @@ class FileIOUtil:
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(content, f)
 
-    @staticmethod
-    def get_db_config():
-        """
-        从固定路径获取数据库配置信息
-        :return:
-        """
-        config_path = '../config/dblink.ini'
-        if not FileIOUtil.file_exists(config_path):
-            FileIOUtil.write_file(config_path, [])
-
-        db_config: list[dict] = FileIOUtil.read_file(config_path)
-        db_config.sort(key=lambda x: int(x['sort_no']))
-
-        return db_config
-
 
     @staticmethod
     def get_file_list() -> [str]:
@@ -220,5 +205,67 @@ class FileIOUtil:
         """
         with open(file_path, 'w') as f:
             f.write(base64.b64encode(text.encode('utf-8')).decode('utf-8'))
+
+
+class DBConfigIO:
+    class DBConfigInfo:
+        def __init__(self, link_name, host, database, port, user, password):
+            self.link_name = link_name
+            self.host = host
+            self.database = database
+            self.port = port
+            self.user = user
+            self.password = password
+
+        def __json__(self):
+            js = {}
+            js.update({'link_name': self.link_name})
+            js.update({'host': self.host})
+            js.update({'database': self.database})
+            js.update({'port': self.port})
+            js.update({'user': self.user})
+            js.update({'password': self.password})
+            return js
+
+    def __init__(self):
+        self.config_path = '../config/dblink.ini'
+        self.db_config: [DBConfigIO.DBConfigInfo] = []
+
+        self.db_config_init()
+    def db_config_init(self):
+        """
+        从固定路径获取数据库配置信息
+        :return:
+        """
+        if not FileIOUtil.file_exists(self.config_path):
+            FileIOUtil.write_file(self.config_path, [])
+
+        db_config: list[dict] = FileIOUtil.read_file(self.config_path)
+        for config in db_config:
+            self.db_config.append(DBConfigIO.DBConfigInfo(config['link_name'],
+                                                          config['host'],
+                                                          config['database'],
+                                                          config['port'],
+                                                          config['user'],
+                                                          config['password']
+                                                          ))
+
+    def get_link_names(self):
+        return [config.link_name for config in self.db_config]
+
+    def add_link(self, link_name):
+        self.db_config.append(DBConfigIO.DBConfigInfo(link_name, '', '', '5432', '', ''))
+
+    def delete_link(self, link: DBConfigInfo):
+        self.db_config.remove(link)
+
+    def save_link(self):
+        links = []
+        for config in self.db_config:
+            links.append(config.__json__())
+
+        FileIOUtil.write_file(self.config_path, links)
+
+
 
 

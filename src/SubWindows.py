@@ -181,12 +181,24 @@ class DBlinkDisplayWindow(SubWindowBase):
         self.setLayout(window_layout)
 
         # 数据库连接列表
+        db_config_list_layout = QBoxLayout(QBoxLayout.TopToBottom)
+        window_layout.addLayout(db_config_list_layout)
+        window_layout.setStretchFactor(db_config_list_layout, 1)
+
         self.db_config_list_widget = QListWidget(self)
         self.db_config_list_widget.itemClicked.connect(self.db_config_selected)
-        window_layout.addWidget(self.db_config_list_widget)
+        db_config_list_layout.addWidget(self.db_config_list_widget)
 
+        db_config_button_layout = QBoxLayout(QBoxLayout.LeftToRight)
+        db_config_list_layout.addLayout(db_config_button_layout)
 
-        window_layout.setStretchFactor(self.db_config_list_widget, 1)
+        self.db_config_add_button = QPushButton('新增', self)
+        self.db_config_add_button.clicked.connect(self.db_config_add_action)
+        db_config_button_layout.addWidget(self.db_config_add_button)
+
+        self.db_config_delete_button = QPushButton('删除', self)
+        self.db_config_delete_button.clicked.connect(self.db_config_delete_action)
+        db_config_button_layout.addWidget(self.db_config_delete_button)
 
 
         # 数据库配置展示框
@@ -198,23 +210,25 @@ class DBlinkDisplayWindow(SubWindowBase):
 
     def fresh_data(self):
         # 获取缓存中数据库配置信息
-        self.db_config = FileIO.FileIOUtil.get_db_config()
+        self.db_config_io = FileIO.DBConfigIO()
+
+        # 需要保存的 db_config
 
         self.db_config_list_widget.clear()
 
-        self.db_config_list_widget.addItems([db['link_name'] for db in self.db_config])
+        self.db_config_list_widget.addItems([config.link_name for config in self.db_config_io.db_config])
 
 
 
     def fresh_config_data(self, item: QListWidgetItem):
-        self.current_config = self.db_config[self.db_config_list_widget.row(item)]
+        self.current_config = self.db_config_io.db_config[self.db_config_list_widget.row(item)]
 
-        self.link_name_edit.setText(self.current_config['link_name'])
-        self.host_line_edit.setText(self.current_config['host'])
-        self.port_line_edit.setText(self.current_config['port'])
-        self.database_line_edit.setText(self.current_config['database'])
-        self.user_line_edit.setText(self.current_config['user'])
-        self.password_line_edit.setText(self.current_config['password'])
+        self.link_name_edit.setText(self.current_config.link_name)
+        self.host_line_edit.setText(self.current_config.host)
+        self.port_line_edit.setText(self.current_config.port)
+        self.database_line_edit.setText(self.current_config.database)
+        self.user_line_edit.setText(self.current_config.user)
+        self.password_line_edit.setText(self.current_config.password)
 
     @staticmethod
     def line_widget(parent: QWidget, label_text: str):
@@ -238,28 +252,32 @@ class DBlinkDisplayWindow(SubWindowBase):
         self.db_config_info_widget.setLayout(db_config_info_widget_layout)
 
         self.link_name_widget, self.link_name_edit = self.line_widget(self.db_config_info_widget, 'name     : ')
-
+        # self.link_name_edit.textChanged.connect(lambda: self.save_config_info(item))
         db_config_info_widget_layout.addWidget(self.link_name_widget)
+
+
         self.host_widget, self.host_line_edit = self.line_widget(self.db_config_info_widget, 'host     : ')
-
+        # self.host_line_edit.textChanged.connect(lambda: self.save_config_info(item))
         db_config_info_widget_layout.addWidget(self.host_widget)
-        self.port_widget, self.port_line_edit = self.line_widget(self.db_config_info_widget, 'port     : ')
 
+        self.port_widget, self.port_line_edit = self.line_widget(self.db_config_info_widget, 'port     : ')
+        # self.port_line_edit.textChanged.connect(lambda: self.save_config_info(item))
         db_config_info_widget_layout.addWidget(self.port_widget)
+
         self.database_widget, self.database_line_edit = self.line_widget(self.db_config_info_widget, 'database : ')
+        # self.database_line_edit.textChanged.connect(lambda: self.save_config_info(item))
         db_config_info_widget_layout.addWidget(self.database_widget)
 
         self.user_widget, self.user_line_edit = self.line_widget(self.db_config_info_widget, 'user     : ')
+        # self.user_line_edit.textChanged.connect(lambda: self.save_config_info(item))
         db_config_info_widget_layout.addWidget(self.user_widget)
 
         self.password_widget, self.password_line_edit = self.line_widget(self.db_config_info_widget, 'password : ')
+        # self.password_line_edit.textChanged.connect(lambda: self.save_config_info(item))
         db_config_info_widget_layout.addWidget(self.password_widget)
 
         group_button_layout = QBoxLayout(QBoxLayout.LeftToRight)
         db_config_info_widget_layout.addLayout(group_button_layout)
-
-        save_button = QPushButton('保存')
-        group_button_layout.addWidget(save_button)
 
         test_button = QPushButton('测试连接')
         test_button.clicked.connect(self.test_button_action)
@@ -270,6 +288,32 @@ class DBlinkDisplayWindow(SubWindowBase):
         group_button_layout.addWidget(query_button)
 
         self.fresh_config_data(item)
+
+    def save_config_info(self, item: QListWidgetItem):
+        self.current_config = self.db_config_io.db_config[self.db_config_list_widget.row(item)]
+
+        self.current_config.link_name = self.link_name_edit.text()
+        self.current_config.host = self.host_line_edit.text()
+        self.current_config.port = self.port_line_edit.text()
+        self.current_config.database = self.database_line_edit.text()
+        self.current_config.user = self.user_line_edit.text()
+        self.current_config.password = self.password_line_edit.text()
+
+        self.save_action()
+        self.fresh_data()
+
+
+    def db_config_add_action(self):
+        self.db_config_io.add_link(f"link{len(self.db_config_io.db_config)+1}")
+        self.save_action()
+        self.fresh_data()
+    def db_config_delete_action(self):
+        self.db_config_io.delete_link(self.db_config_io.db_config[self.db_config_list_widget.currentRow()])
+        self.save_action()
+        self.fresh_data()
+
+    def save_action(self):
+        self.db_config_io.save_link()
 
     def test_button_action(self):
         host = self.host_line_edit.text()
@@ -304,8 +348,3 @@ class DBlinkDisplayWindow(SubWindowBase):
             self.main_window.table_struct_window_display(db_struct)
         else:
             QMessageBox.critical(self.db_config_info_widget, '测试消息', text_info, QMessageBox.Ok)
-
-
-
-if __name__ == '__main__':
-    print(SubWindowType.DB_STRUCT_WINDOW.value[0])
