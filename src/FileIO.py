@@ -51,6 +51,10 @@ class FileIOUtil:
         files = [file_path.split('.')[0] for file_path in file_paths]
 
         return files
+    @staticmethod
+    def delete_db_file(file_name):
+        file_path = os.path.join(path_lead.get_path(r'\resource'), file_name+'.db')
+        os.remove(file_path)
 
     @staticmethod
     def get_db_struct(file_name):

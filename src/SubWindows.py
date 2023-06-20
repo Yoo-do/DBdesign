@@ -81,6 +81,12 @@ class SubWindow:
 
 
 class FileDisplayWindow(SubWindowBase):
+    class FileListWidget(QListWidget):
+        def keyPressEvent(self, event) -> None:
+            if event.key() == Qt.Key_Delete:
+                item = self.selectedItems()[0]
+                FileIO.FileIOUtil.delete_db_file(item.text())
+                self.takeItem(self.row(item))
     """
     文件展示widget
     """
@@ -89,7 +95,7 @@ class FileDisplayWindow(SubWindowBase):
         display_layout = QBoxLayout(QBoxLayout.TopToBottom)
         self.setLayout(display_layout)
 
-        self.file_list_widget = QListWidget()
+        self.file_list_widget = self.FileListWidget(self)
 
         self.file_list_widget.itemDoubleClicked.connect(lambda: self.main_window.table_struct_window_display(FileIO.FileIOUtil.get_db_struct(self.file_list_widget.currentItem().text())))
 

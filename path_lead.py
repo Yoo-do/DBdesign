@@ -1,5 +1,4 @@
 import os.path
-import sys
 
 """
 指引绝对路径
