@@ -1,14 +1,13 @@
 import sys
-from src import SubWindows
+import SubWindows
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenuBar, QAction, QInputDialog, QMessageBox, QFileDialog
-from PyQt5.Qt import Qt, QThread, pyqtSignal
-
+from PyQt5.Qt import Qt, QThread, pyqtSignal, QIcon, QPixmap
+import path_lead
 
 class Interface(QMainWindow):
     """
     主窗口
     """
-
     def __init__(self):
 
         self.app = QApplication(sys.argv)
@@ -30,6 +29,7 @@ class Interface(QMainWindow):
         self.resize(1000, 800)
         self.move(400, 100)
         self.setWindowTitle('DBDesign')
+        self.setWindowIcon(QIcon(QPixmap(path_lead.get_path(r'\icon\db.ico'))))
 
         # 导航菜单设置
         self.menu_bar_init()

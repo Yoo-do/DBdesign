@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import  QWidget, QListWidget, QBoxLayout, \
     QTableWidget, QTableWidgetItem,  QPushButton, QMessageBox, QMainWindow, QListWidgetItem, QLabel, QLineEdit, QStackedWidget
 from PyQt5.Qt import Qt
-from src import DataClass, FileIO, DBLink
+import DataClass, FileIO, DBLink
 from enum import Enum
 
 

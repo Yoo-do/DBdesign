@@ -1,5 +1,5 @@
 import psycopg2
-from src import DataClass
+import DataClass
 
 
 class PostgresLink:

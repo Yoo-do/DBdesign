@@ -2,9 +2,10 @@ import json
 import os
 import time
 
-from src.DataClass import *
+from DataClass import *
 import base64
 import xlwings
+import path_lead
 
 class FileIOUtil:
 
@@ -46,7 +47,7 @@ class FileIOUtil:
         :return:
         """
         # 只拿取.db后缀的文件
-        file_paths = [x for x in os.listdir('../resource') if x.endswith('db')]
+        file_paths = [x for x in os.listdir(path_lead.get_path(r'\resource')) if x.endswith('db')]
         files = [file_path.split('.')[0] for file_path in file_paths]
 
         return files
@@ -58,7 +59,7 @@ class FileIOUtil:
         :param file_name:
         :return:
         """
-        file_path = os.path.join('../resource/', file_name + '.db')
+        file_path = os.path.join(path_lead.get_path(r'\resource'), file_name + '.db')
         db_struct = DBStruct(file_name)
 
         schemas = []
@@ -84,7 +85,7 @@ class FileIOUtil:
 
     @staticmethod
     def write_db_struct(db_struct: DBStruct, file_name: str):
-        file_path = os.path.join('../resource/', file_name + '.db')
+        file_path = os.path.join(path_lead.get_path(r'\resource'), file_name + '.db')
         FileIOUtil.write_encryption_data(file_path, json.dumps(db_struct.__json__()))
 
     @staticmethod
@@ -102,6 +103,8 @@ class FileIOUtil:
                 sheet = book.sheets.add(schema.schema_name)
                 schema_links = {"schema_name": schema.schema_name, "schema_link": f'#{schema.schema_name}!A1', 'table_links': []}
                 current_row = 1
+                if len(schema.tables) == 0:
+                    continue
                 for table in schema.tables:
                     sheet.range(f'A{current_row}').value = table.table_name
                     table_name_cell = sheet.range(f'A{current_row}:E{current_row}')
@@ -165,9 +168,10 @@ class FileIOUtil:
                 sheet.range(f'A{sheet_start_row}').add_hyperlink(sheet_link_item['schema_link'], sheet_link_item['schema_name'], sheet_link_item['schema_name'])
                 for table_link_item in sheet_link_item['table_links']:
                     sheet.range(f'B{current_row}').add_hyperlink(table_link_item['table_link'],
-                                                                 table_link_item['table_name'] + '('+ table_link_item['table_note'] +')' if table_link_item['table_note'] is not None else '',
+                                                                 table_link_item['table_name'] + (('(' + table_link_item['table_note'] + ')') if table_link_item['table_note'] is not None else ''),
                                                                  table_link_item['table_name'])
                     current_row += 1
+
                 sheet.range(f'A{sheet_start_row}:A{current_row-1}').api.Merge()
 
 
@@ -230,7 +234,7 @@ class DBConfigIO:
             return js
 
     def __init__(self):
-        self.config_path = '../config/dblink.ini'
+        self.config_path = path_lead.get_path(r'\config\dblink.ini')
         self.db_config: [DBConfigIO.DBConfigInfo] = []
 
         self.db_config_init()
