@@ -238,7 +238,7 @@ class DBConfigIO:
             return js
 
     def __init__(self):
-        self.config_path = path_lead.get_path(r'\config\dblink.ini')
+        self.config_path = path_lead.get_path(r'\resource\dblink.ini')
         self.db_config: [DBConfigIO.DBConfigInfo] = []
 
         self.db_config_init()

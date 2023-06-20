@@ -10,8 +10,8 @@ a = Analysis(
     binaries=[],
     datas=[
         ('icon\\db.ico', 'icon'),
-        ('config', 'config'),
-        ('resource', 'resource')
+        ('resource', 'resource'),
+        ('path_lead.py', '.'),
     ],
     hiddenimports=[],
     hookspath=[],

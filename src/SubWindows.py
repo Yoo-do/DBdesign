@@ -316,6 +316,10 @@ class DBlinkDisplayWindow(SubWindowBase):
         self.fresh_data()
     def db_config_delete_action(self):
         self.db_config_io.delete_link(self.db_config_io.db_config[self.db_config_list_widget.currentRow()].sort_no)
+
+        for child in self.db_config_info_widget.children():
+            child.deleteLater()
+
         self.save_action()
         self.fresh_data()
 
