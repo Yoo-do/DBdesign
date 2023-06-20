@@ -118,7 +118,7 @@ class Interface(QMainWindow):
                     SubWindows.FileIO.FileIOUtil.export_excel(self.data, self.target_file_path)
                     self.msg_signal.emit('文件导出成功')
                 except Exception as e:
-                    self.msg_signal.emit('文件导出失败')
+                    self.msg_signal.emit(e.__str__())
 
         def export_excel_func(target_file_path):
             self.export_excel_process = ExportExcel(self.subwindows.stack_widget.currentWidget().data, target_file_path)
@@ -131,13 +131,6 @@ class Interface(QMainWindow):
 
         if file_suffix == '':
             return
-
-        if SubWindows.FileIO.os.path.exists(file_path):
-            ok = QMessageBox.information(self, '提示', '该文件已存在，需要覆盖吗？',
-                                              QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            if ok == QMessageBox.Yes:
-                export_excel_func(file_path)
-                QMessageBox.information(self, '消息通知', '文件正在导出，请不要退出程序', QMessageBox.Ok)
         else:
             export_excel_func(file_path)
             QMessageBox.information(self, '消息通知', '文件正在导出，请不要退出程序', QMessageBox.Ok)

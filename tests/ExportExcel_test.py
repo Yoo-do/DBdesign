@@ -1,5 +1,7 @@
 import time
 
+import xlwings
+
 from src.FileIO import *
 
 def test1():
@@ -53,8 +55,22 @@ def test2():
     FileIOUtil.export_excel(data, '../resource/hdr.xlsx')
 
 
+def test3():
+    with xlwings.Book('../resource/hdr.xlsx') as book:
+        sheet = book.sheets('hdr汇总')
+        sheet.range('B2').add_hyperlink('#sd!B3','hdr汇总!ssss')
+        book.save('../resource/hdr.xlsx')
+
+def test4():
+    with xlwings.Book('../resource/hdr.xlsx') as book:
+        sheet = book.sheets('hdr汇总')
+        sheet.range('A1').value = 'hdr汇总'
+        sheet.range('A1:B1').api.Merge()
+        book.save('../resource/hdr.xlsx')
+
+
 if __name__ == '__main__':
     begin_time = time.time()
-    test2()
+    test4()
     end_time = time.time()
     print(end_time - begin_time)

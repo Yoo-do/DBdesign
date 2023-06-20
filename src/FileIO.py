@@ -105,15 +105,17 @@ class FileIOUtil:
     @staticmethod
     def export_excel(data: DBStruct, file_path: str):
         begin_time = time.time()
-
         data.schemas.reverse()
+
         print(f'目标路径为{file_path}')
         with xlwings.App(visible=False, add_book=False) as app:
+            link_path = []
             app.screen_updating = False
             book = app.books.add()
             for schema in data.schemas:
                 print(f'正在写入{schema.schema_name}...')
                 sheet = book.sheets.add(schema.schema_name)
+                schema_links = {"schema_name": schema.schema_name, "schema_link": f'#{schema.schema_name}!A1', 'table_links': []}
                 current_row = 1
                 for table in schema.tables:
                     sheet.range(f'A{current_row}').value = table.table_name
@@ -122,6 +124,9 @@ class FileIOUtil:
                     table_name_cell.color = (255, 255, 0)
                     table_name_cell.api.HorizontalAlignment = -4108
                     table_name_cell.api.VerticalAlignment = -4108
+
+                    schema_links['table_links'].append({'table_name': table.table_name, 'table_note': table.table_note, 'table_link': f'#{schema.schema_name}!A{current_row}'})
+
                     current_row += 1
 
                     sheet.range(f'A{current_row}').value = table.table_note
@@ -149,6 +154,47 @@ class FileIOUtil:
                 sheet.range(f'A1:E{current_row - 1}').api.Borders.Weight = 2
                 for col in sheet.range(f'A1:E{current_row - 1}').columns:
                     col.autofit()
+
+                link_path.append(schema_links)
+
+            # 汇总sheet，并导入超链接
+            current_row = 1
+            sheet = book.sheets.add(f'{data.db_name}汇总')
+
+            #标题设置
+            sheet.range(f'A{current_row}').value = f'{data.db_name}汇总'
+            tittle_cell = sheet.range(f'A{current_row}:B{current_row}')
+            tittle_cell.api.Merge()
+            tittle_cell.api.HorizontalAlignment = -4108
+            tittle_cell.api.VerticalAlignment = -4108
+            tittle_cell.color = (255, 255, 0)
+
+            current_row += 1
+
+            link_path.reverse()
+
+            for sheet_link_item in link_path:
+                sheet_start_row = current_row
+                # schema 超链接设置
+                sheet.range(f'A{sheet_start_row}').value = sheet_link_item['schema_name']
+                sheet.range(f'A{sheet_start_row}').add_hyperlink(sheet_link_item['schema_link'], sheet_link_item['schema_name'], sheet_link_item['schema_name'])
+                for table_link_item in sheet_link_item['table_links']:
+                    sheet.range(f'B{current_row}').add_hyperlink(table_link_item['table_link'],
+                                                                 table_link_item['table_name'] + '('+ table_link_item['table_note'] +')' if table_link_item['table_note'] is not None else '',
+                                                                 table_link_item['table_name'])
+                    current_row += 1
+                sheet.range(f'A{sheet_start_row}:A{current_row-1}').api.Merge()
+
+
+            table_cell = sheet.range(f'A1:B{current_row - 1}')
+            table_cell.api.HorizontalAlignment = -4108
+            table_cell.api.VerticalAlignment = -4108
+            table_cell.api.Borders.Weight = 2
+            for col in table_cell.columns:
+                col.autofit()
+
+
+
 
             book.save(file_path)
             end_time = time.time()
