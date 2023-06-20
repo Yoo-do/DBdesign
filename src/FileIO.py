@@ -209,7 +209,8 @@ class FileIOUtil:
 
 class DBConfigIO:
     class DBConfigInfo:
-        def __init__(self, link_name, host, database, port, user, password):
+        def __init__(self, sort_no, link_name, host, database, port, user, password):
+            self.sort_no = sort_no
             self.link_name = link_name
             self.host = host
             self.database = database
@@ -219,6 +220,7 @@ class DBConfigIO:
 
         def __json__(self):
             js = {}
+            js.update({'sort_no': self.sort_no})
             js.update({'link_name': self.link_name})
             js.update({'host': self.host})
             js.update({'database': self.database})
@@ -242,7 +244,8 @@ class DBConfigIO:
 
         db_config: list[dict] = FileIOUtil.read_file(self.config_path)
         for config in db_config:
-            self.db_config.append(DBConfigIO.DBConfigInfo(config['link_name'],
+            self.db_config.append(DBConfigIO.DBConfigInfo(config['sort_no'],
+                                                          config['link_name'],
                                                           config['host'],
                                                           config['database'],
                                                           config['port'],
@@ -250,18 +253,27 @@ class DBConfigIO:
                                                           config['password']
                                                           ))
 
+        self.db_config.sort(key=lambda x: int(x.sort_no))
+
     def get_link_names(self):
         return [config.link_name for config in self.db_config]
 
     def add_link(self, link_name):
-        self.db_config.append(DBConfigIO.DBConfigInfo(link_name, '', '', '5432', '', ''))
+        self.db_config.append(DBConfigIO.DBConfigInfo(f'{len(self.db_config)}', link_name, '', '', '5432', '', ''))
 
-    def delete_link(self, link: DBConfigInfo):
-        self.db_config.remove(link)
+    def delete_link(self, sort_no):
+        """
+        删除对应序号的连接信息，删除后需要立即保存，并刷新数据
+        :param sort_no:
+        :return:
+        """
+        self.db_config.remove([config for config in self.db_config if config.sort_no == sort_no][0])
 
     def save_link(self):
         links = []
-        for config in self.db_config:
+        self.db_config.sort(key=lambda x: int(x.sort_no))
+        for sort_no, config in enumerate(self.db_config):
+            config.sort_no = f'{sort_no}'
             links.append(config.__json__())
 
         FileIOUtil.write_file(self.config_path, links)
