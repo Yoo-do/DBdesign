@@ -275,6 +275,7 @@ class DBlinkDisplayWindow(SubWindowBase):
         db_config_info_widget_layout.addWidget(self.user_widget)
 
         self.password_widget, self.password_line_edit = self.line_widget(self.db_config_info_widget, 'password : ')
+        self.password_line_edit.setEchoMode(QLineEdit.Password)
         db_config_info_widget_layout.addWidget(self.password_widget)
 
         group_button_layout = QBoxLayout(QBoxLayout.LeftToRight)
