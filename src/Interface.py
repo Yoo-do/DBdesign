@@ -28,7 +28,7 @@ class Interface(QMainWindow):
 
         self.resize(1000, 800)
         self.move(400, 100)
-        self.setWindowTitle('DBDesign')
+        self.setWindowTitle('DBDesign v0.9')
         self.setWindowIcon(QIcon(QPixmap(path_lead.get_path(r'\icon\db.ico'))))
 
         # 导航菜单设置
