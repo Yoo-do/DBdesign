@@ -10,6 +10,11 @@ import path_lead
 class FileIOUtil:
 
     @staticmethod
+    def init_dir():
+        if not os.path.exists(path_lead.get_path(r'\resource')):
+            os.mkdir(path_lead.get_path(r'\resource'))
+
+    @staticmethod
     def file_exists(file_path) -> bool:
         """
         判断指定路径的文件是否存在
@@ -46,6 +51,7 @@ class FileIOUtil:
         获取resource文件夹下面的全部 db 后缀名文件
         :return:
         """
+        FileIOUtil.init_dir()
         # 只拿取.db后缀的文件
         file_paths = [x for x in os.listdir(path_lead.get_path(r'\resource')) if x.endswith('db')]
         files = [file_path.split('.')[0] for file_path in file_paths]
@@ -63,6 +69,7 @@ class FileIOUtil:
         :param file_name:
         :return:
         """
+        FileIOUtil.init_dir()
         file_path = os.path.join(path_lead.get_path(r'\resource'), file_name + '.db')
         db_struct = DBStruct(file_name)
 
