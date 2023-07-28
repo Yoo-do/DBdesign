@@ -187,7 +187,8 @@ class FileIOUtil:
                 col.autofit()
 
 
-
+            if len(book.sheets) > 1 :
+                book.sheets['Sheet1'].delete()
 
             book.save(file_path)
             end_time = time.time()
